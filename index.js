@@ -1,9 +1,12 @@
 const express = require('express')
+const bodyParser = require('body-parser')
+
+const moviesRouter = require('./Routes/movies')
 
 const app = express()
+const port = process.env.PORT || 4000
 
-app.get('/', (req, res) => {
-    res.send('hello world')
-})
-
-app.listen(4000, () => console.log(`Listening to port 4000`))
+app
+    .use(bodyParser.json())
+    .use(moviesRouter)
+    .listen(port, () => console.log(`Listening to port ${port}`))
