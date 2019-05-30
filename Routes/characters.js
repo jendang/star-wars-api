@@ -2,7 +2,7 @@ const { Router } = require('express')
 const axios = require('axios')
 const router = new Router()
 
-const baseUrl = 'https://swapi.co/api'
+const baseUrl = 'https://swapi.co/api/films/'
 
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
 router.get('/movies/search', (req, res) => {
@@ -12,7 +12,7 @@ router.get('/movies/search', (req, res) => {
     console.log(sortHeight)
     console.log(sortAge)
     axios
-        .get(`${baseUrl}/films/`)
+        .get(baseUrl)
         .then(response => response.data)
         .then(data => {
             if(title === undefined){
