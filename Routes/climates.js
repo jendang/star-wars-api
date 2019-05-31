@@ -29,8 +29,8 @@ router.get('/planets', (req, res) => {
 }) 
 
 //show all of Star Wars planets with climate search term and collection of dark-haired characters from that planet
-router.get('/planets/search', (req, res, next) => {
-    let climate = req.query.climate.toLowerCase()
+router.get('/planets/search', (req, res) => {
+    let {climate} = req.query
 
     return fetchAllPlanets()
         .then(planets => {
@@ -41,37 +41,39 @@ router.get('/planets/search', (req, res, next) => {
                 return res.status(400).send({ message: "Climate search term should not be empty!"})
             }
             else {
-                return planets.filter(planet => planet.climate.includes(climate))
+                const climateQuery = climate.toLowerCase()
+                const planetsByClimate = planets.filter(planet => {
+                    const planetClimate = planet.climate.split(", ")
+                    return planetClimate.includes(climateQuery)
+
+                }) 
+                    
+
+                if (planetsByClimate.length === 0){
+                    res.status(404).send({ message: `Not found any planets with ${climateQuery} climate `})
+                }
+                else {
+                    const planetsWithDarkHaired = planetsByClimate.map(planet => {
+                        const peoplePromises =  planet.residents.map(url => axios.get(url))                
+                        
+                        return Promise.all(peoplePromises)
+                            .then(responses => {
+                                const darkHaired = responses
+                                    .filter(response => response.data.hair_color === 'brown' || response.data.hair_color === 'black')
+                                    .map(response => response.data)
+                                planet.darkHairedPeople = darkHaired
+                                return planet
+                            })
+                            .catch(err => console.error(err))
+                    })
+
+                    Promise.all(planetsWithDarkHaired).then(planets => {
+                        return res.json({planets})
+                    })
+                    .catch(err => console.error(err)) 
+                }
             }    
         }) 
-        .then(planetsFound => {
-            if(planetsFound.length === 0){
-                return res.status(404).send({ message: `Not found any planets with ${climate} climate `})
-            } else {
-                return planetsFound
-            }   
-        })
-        .then(planets => {
-            return planets.map(planet => {
-                const peoplePromises =  planet.residents.map(url => axios.get(url))                
-                
-                return Promise.all(peoplePromises)
-                    .then(responses => {
-                        const darkHaired = responses
-                            .filter(response => response.data.hair_color === 'brown' || response.data.hair_color === 'black')
-                            .map(response => response.data)
-                        planet.darkHairedPeople = darkHaired
-                        return planet
-                    })
-                    .catch(err => console.error(err))
-            })
-        })
-        .then(planetsWithDarkHaired => {
-            Promise.all(planetsWithDarkHaired).then(planets => {
-                return res.json({planets})
-            })
-            .catch(err => console.error(err))    
-        })
         .catch(err => console.error(err))
 }) 
 
