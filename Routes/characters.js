@@ -5,7 +5,7 @@ const router = new Router()
 const baseUrl = 'https://swapi.co/api/films/'
 
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
-router.get('/movies/search', (req, res, next) => {
+router.get('/movies/search', (req, res) => {
     let { title, gender, sortHeight, sortAge } = req.query
     
     axios
@@ -27,21 +27,23 @@ router.get('/movies/search', (req, res, next) => {
                         return movie 
                     }
                 })
+                
+                console.log(movieFound)
 
                 if(movieFound === undefined){
                     res.status(404).send({ message: `Not found any movie with ${titleQuery} title `})
                 }
                 else {
-                    
                     const characters = movieFound.characters
-                    
                     const charactersPromises =  characters.map(url => axios.get(url))
-    
+                    
                     return Promise.all(charactersPromises).then(responses => {
+                        
                         const people = responses.map(response => response.data)
         
                         if(gender === undefined){
                             res.json(people)
+                            
                         }
                         else if (gender === ""){
                             res.status(400).send({ message: "Search term should not be empty!"})
@@ -105,6 +107,7 @@ router.get('/movies/search', (req, res, next) => {
                         }
                     })
                     .catch(err => console.error(err))
+                    
                 }
             }
         }) 
