@@ -7,10 +7,10 @@ const baseUrl = 'https://swapi.co/api/films/'
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
 router.get('/movies/search', (req, res) => {
     let { title, gender, sortHeight, sortAge } = req.query
-    console.log(title)
-    console.log(gender)
-    console.log(sortHeight)
-    console.log(sortAge)
+    // console.log(title)
+    // console.log(gender)
+    // console.log(sortHeight)
+    // console.log(sortAge)
     axios
         .get(baseUrl)
         .then(response => response.data)

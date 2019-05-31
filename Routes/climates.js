@@ -2,8 +2,7 @@ const axios = require('axios')
 const { Router } = require('express')
 const router = new Router()
 
-
-async function fetchMetaData() {
+async function fetchAllPlanets() {
     const baseUrl = 'https://swapi.co/api/planets/';
     let allData = [];
     const total_pages = 7;
@@ -29,34 +28,51 @@ router.get('/planets', (req, res) => {
     return data
 }) 
 
-//show all of Star Wars planets with climate search term
+//show all of Star Wars planets with climate search term and collection of dark-haired characters from that planet
 router.get('/planets/search', (req, res, next) => {
     let climate = req.query.climate.toLowerCase()
 
-    const data = fetchMetaData()
-                    .then(planets => {
-                        if(climate === undefined){
-                            return res.status(400).send({ message: "Bad request!"})
-                        }
-                        else if (climate === ""){
-                            return res.status(400).send({ message: "Climate search term should not be empty!"})
-                        }
-                        else {
-                            return planets.filter(planet => planet.climate.includes(climate))
-                        }    
-                    }) 
-                    .then(foundPlanets => {
-                        if(foundPlanets.length === 0){
-                            return res.status(404).send({ message: `Not found any planets with ${climate} climate `})
-                        } else {
-                            return res.json({ planets: foundPlanets })
-                        }
-                    })
+    return fetchAllPlanets()
+        .then(planets => {
+            if(climate === undefined){
+                return res.status(400).send({ message: "Bad request!"})
+            }
+            else if (climate === ""){
+                return res.status(400).send({ message: "Climate search term should not be empty!"})
+            }
+            else {
+                return planets.filter(planet => planet.climate.includes(climate))
+            }    
+        }) 
+        .then(planetsFound => {
+            if(planetsFound.length === 0){
+                return res.status(404).send({ message: `Not found any planets with ${climate} climate `})
+            } else {
+                return planetsFound
+            }   
+        })
+        .then(planets => {
+            return planets.map(planet => {
+                const peoplePromises =  planet.residents.map(url => axios.get(url))                
                 
-                .catch(err => console.error(err))
-    return data
-    
+                return Promise.all(peoplePromises)
+                    .then(responses => {
+                        const darkHaired = responses
+                            .filter(response => response.data.hair_color === 'brown' || response.data.hair_color === 'black')
+                            .map(response => response.data)
+                        planet.darkHairedPeople = darkHaired
+                        return planet
+                    })
+                    .catch(err => console.error(err))
+            })
+        })
+        .then(planetsWithDarkHaired => {
+            Promise.all(planetsWithDarkHaired).then(planets => {
+                return res.json({planets})
+            })
+            .catch(err => console.error(err))    
+        })
+        .catch(err => console.error(err))
 }) 
-
 
 module.exports = router
