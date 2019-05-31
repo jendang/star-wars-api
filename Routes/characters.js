@@ -28,7 +28,7 @@ router.get('/movies/search', (req, res) => {
                     }
                 })
                 
-                console.log(movieFound)
+                //console.log(movieFound)
 
                 if(movieFound === undefined){
                     res.status(404).send({ message: `Not found any movie with ${titleQuery} title `})
@@ -40,9 +40,26 @@ router.get('/movies/search', (req, res) => {
                     return Promise.all(charactersPromises).then(responses => {
                         
                         const people = responses.map(response => response.data)
-        
+                        let totalCharacters = people.length
+                        let pageCount = Math.ceil(people.length / 30);
+                        let page = parseInt(req.query.p);
+                        if (!page) { page = 1;}
+                        if (page > pageCount) {
+                          page = pageCount
+                        }
+
+                        const titleUrl = titleQuery.split(" ").join("+")
+                        
                         if(gender === undefined){
-                            res.json(people)
+                            //res.json(people)
+                            res.json({
+                                "Total characters": totalCharacters,
+                                "Page": page,
+                                "Page Count": pageCount,
+                                "Previous page": `http://localhost:4000/movies/search?title=${titleUrl}&p=${page - 1}`,
+                                "Next page": `http://localhost:4000/movies/search?title=${titleUrl}&p=${page + 1}`,
+                                "Results": people.slice(page * 30 - 30, page * 30)
+                            })
                             
                         }
                         else if (gender === ""){
