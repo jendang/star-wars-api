@@ -1,10 +1,9 @@
 
 # STAR WARS Fanclub Website 
 
+### This is the backend for STAR WARS fanclub website make calls to the various API endpoints. 
+
 ![Star Wars Logo](https://github.com/jendang/star-wars-api/blob/master/starwarslogo.png)
-
-
-This is the backend for STAR WARS fanclub website make calls to the various API endpoints. 
 
 ## :point_right: :point_right:[Deployment link here ](https://desolate-shore-53301.herokuapp.com/) :point_left: :point_left:
 
