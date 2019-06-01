@@ -1,8 +1,9 @@
 const axios = require('axios')
 const { Router } = require('express')
 const router = new Router()
-const pageData = require('./pagedata')
-const paginate = require('./pagination')
+const pageData = require('../lib/pagedata')
+const paginate = require('../lib/pagination')
+
 async function fetchAllPlanets() {
     const baseUrl = 'https://swapi.co/api/planets/';
     let allData = [];
