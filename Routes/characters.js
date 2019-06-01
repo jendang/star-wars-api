@@ -1,8 +1,8 @@
 const { Router } = require('express')
 const axios = require('axios')
 const router = new Router()
-const pageData = require('./pagedata')
-const paginate = require('./pagination')
+const pageData = require('../lib/pagedata')
+const paginate = require('../lib/pagination')
 const baseUrl = 'https://swapi.co/api/films/'
 
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
