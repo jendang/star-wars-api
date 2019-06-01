@@ -1,7 +1,16 @@
 
 # STAR WARS Fanclub Website 
 
+![Star Wars Logo](https://octodex.github.com/images/yaktocat.png)
+
+
 This is the backend for STAR WARS fanclub website make calls to the various API endpoints. 
+
+## [Deployment](https://desolate-shore-53301.herokuapp.com/) 
+
+Tips: use FireFox to test the APIs, it will give you a nice format JSON data
+
+![Example](https://octodex.github.com/images/yaktocat.png)
 
 ## Table of contents
 
