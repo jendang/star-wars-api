@@ -19,10 +19,11 @@ This is the backend for STAR WARS funclub website make calls to the various API 
 
 ## Installation ##
 
-First, clone the project
+First, clone the project https://github.com/jendang/star-wars-api.git
 
 ```
 cd projectFolder  
+
 npm install
 
 ```
