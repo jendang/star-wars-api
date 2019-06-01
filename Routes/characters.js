@@ -1,30 +1,9 @@
 const { Router } = require('express')
 const axios = require('axios')
 const router = new Router()
-
+const pageData = require('./pagedata')
+const paginate = require('./pagination')
 const baseUrl = 'https://swapi.co/api/films/'
-
-const pageData = (limit, offset, count, pageQuery) => {
-    const pageData = {}
-    limit = limit > count ? count : limit
-    offset = offset > count ? count : offset
-  
-    pageData["Total Count"] = count
-    pageData["Page Count"] = Math.ceil(count / limit)
-    pageData["Page Size"] = Number(limit)
-    pageData["Page"] = pageQuery
-    return pageData
-};
-
-const paginate = (page, records, limit) => {
-    let pageCount = Math.ceil(records.length/limit) 
-    if(page <= pageCount){
-        return records.slice(limit * (page - 1), limit * page)
-    } else {
-       return null
-    }
-}
-
 
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
 router.get('/movies/search', (req, res) => {
@@ -149,6 +128,5 @@ router.get('/movies/search', (req, res) => {
         }) 
         .catch(err => console.error(err))        
 })
-
 
 module.exports = router
