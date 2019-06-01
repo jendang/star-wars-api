@@ -1,6 +1,8 @@
 const axios = require('axios')
 const { Router } = require('express')
 const router = new Router()
+const pageData = require('../lib/pagedata')
+const paginate = require('../lib/pagination')
 
 async function fetchAllPlanets() {
     const baseUrl = 'https://swapi.co/api/planets/';
@@ -31,6 +33,9 @@ router.get('/planets', (req, res) => {
 //show all of Star Wars planets with climate search term and collection of dark-haired characters from that planet
 router.get('/planets/search', (req, res) => {
     let {climate} = req.query
+    let limit = req.query.limit || 30
+    let offset = req.query.offset || 0
+    let page = req.query.page || 1
 
     return fetchAllPlanets()
         .then(planets => {
@@ -68,7 +73,10 @@ router.get('/planets/search', (req, res) => {
                     })
 
                     Promise.all(planetsWithDarkHaired).then(planets => {
-                        return res.json({planets})
+                        return res.json({
+                            "Page data": pageData(limit, offset, planets.length, parseInt(page)),
+                            "Planets: ": paginate(parseInt(page), planets, limit)
+                        })
                     })
                     .catch(err => console.error(err)) 
                 }

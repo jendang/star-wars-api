@@ -1,13 +1,16 @@
 const { Router } = require('express')
 const axios = require('axios')
 const router = new Router()
-
+const pageData = require('./pagedata')
+const paginate = require('./pagination')
 const baseUrl = 'https://swapi.co/api/films/'
 
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
 router.get('/movies/search', (req, res) => {
     let { title, gender, sortHeight, sortAge } = req.query
-    
+    let limit = req.query.limit || 30
+    let offset = req.query.offset || 0
+    let page = req.query.page || 1
     axios
         .get(baseUrl)
         .then(response => response.data)
@@ -27,9 +30,6 @@ router.get('/movies/search', (req, res) => {
                         return movie 
                     }
                 })
-                
-                //console.log(movieFound)
-
                 if(movieFound === undefined){
                     res.status(404).send({ message: `Not found any movie with ${titleQuery} title `})
                 }
@@ -38,27 +38,14 @@ router.get('/movies/search', (req, res) => {
                     const charactersPromises =  characters.map(url => axios.get(url))
                     
                     return Promise.all(charactersPromises).then(responses => {
-                        
                         const people = responses.map(response => response.data)
-                        let totalCharacters = people.length
-                        let pageCount = Math.ceil(people.length / 30);
-                        let page = parseInt(req.query.p);
-                        if (!page) { page = 1;}
-                        if (page > pageCount) {
-                          page = pageCount
-                        }
-
-                        const titleUrl = titleQuery.split(" ").join("+")
-                        
+                     
                         if(gender === undefined){
-                            //res.json(people)
+                            
                             res.json({
-                                "Total characters": totalCharacters,
-                                "Page": page,
-                                "Page Count": pageCount,
-                                "Previous page": `http://localhost:4000/movies/search?title=${titleUrl}&p=${page - 1}`,
-                                "Next page": `http://localhost:4000/movies/search?title=${titleUrl}&p=${page + 1}`,
-                                "Results": people.slice(page * 30 - 30, page * 30)
+                                "Movie: ": movieFound.title,
+                                "Page data: ": pageData(limit, offset, people.length, parseInt(page)), 
+                                "Characters: ": paginate(parseInt(page), people, limit)
                             })
                             
                         }
@@ -74,9 +61,13 @@ router.get('/movies/search', (req, res) => {
                             } else {
                                 //List of people by filter gender (female/male)
                                 //SORTING Height OR Age here
-
                                 if(sortHeight === undefined && sortAge === undefined){
-                                    res.json(listPeopleByGender)
+                                    res.json({
+                                        "Movie: ": movieFound.title,
+                                        "Page data: ": pageData(limit, offset, listPeopleByGender.length, parseInt(page)), 
+                                        "Characters: ": paginate(parseInt(page), listPeopleByGender, limit)
+                                    })
+
                                 } 
                                 else if (sortHeight !== undefined && sortAge === undefined){
                                     let sortHeightQuery = sortHeight.toLowerCase()
@@ -94,7 +85,11 @@ router.get('/movies/search', (req, res) => {
                                                 return Number(b.height) - Number(a.height)
                                             }
                                         })
-                                        res.json(charsSortHeight)
+                                        res.json({
+                                            "Movie: ": movieFound.title,
+                                            "Page data: ": pageData(limit, offset, charsSortHeight.length, parseInt(page)), 
+                                            "Characters: ": paginate(parseInt(page), charsSortHeight, limit)
+                                        })
                                     }
                                 }
                                 else if(sortHeight === undefined && sortAge !== undefined){
@@ -113,24 +108,25 @@ router.get('/movies/search', (req, res) => {
                                                 return parseInt(b.birth_year) - parseInt(a.birth_year)
                                             }
                                         })
-                                        res.json(charsSortAge)
+                                        
+                                        res.json({
+                                            "Movie: ": movieFound.title,
+                                            "Page data: ": pageData(limit, offset, charsSortAge.length, parseInt(page)), 
+                                            "Characters: ": paginate(parseInt(page), charsSortAge, limit)
+                                        })
                                     }
                                 }
                                 else if (sortHeight !== undefined && sortAge !== undefined){
                                     res.status(400).send({ message: "You can sort either height or age per time"})
                                 }
                             }
-
                         }
                     })
                     .catch(err => console.error(err))
-                    
                 }
             }
         }) 
-        .catch(err => console.error(err)) 
-                
+        .catch(err => console.error(err))        
 })
-
 
 module.exports = router
