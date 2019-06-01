@@ -18,7 +18,7 @@ This is the backend for STAR WARS fanclub website make calls to the various API 
 
 ## Framework
 
-* [Express] (https://expressjs.com/)
+* [Express](https://expressjs.com/)
 
 ## Installation
 
