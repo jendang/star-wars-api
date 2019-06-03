@@ -25,6 +25,10 @@ async function fetchAllPlanets() {
 
 //show all of Star Wars planets
 router.get('/planets', (req, res) => {
+    let limit = req.query.limit || 30
+    let offset = req.query.offset || 0
+    let page = req.query.page || 1
+
     const data = fetchMetaData()
                 .then(values => res.json(values))
     return data
@@ -33,10 +37,7 @@ router.get('/planets', (req, res) => {
 //show all of Star Wars planets with climate search term and collection of dark-haired characters from that planet
 router.get('/planets/search', (req, res) => {
     let {climate} = req.query
-    let limit = req.query.limit || 30
-    let offset = req.query.offset || 0
-    let page = req.query.page || 1
-
+    
     return fetchAllPlanets()
         .then(planets => {
             if(climate === undefined){
@@ -50,10 +51,8 @@ router.get('/planets/search', (req, res) => {
                 const planetsByClimate = planets.filter(planet => {
                     const planetClimate = planet.climate.split(", ")
                     return planetClimate.includes(climateQuery)
-
                 }) 
                     
-
                 if (planetsByClimate.length === 0){
                     res.status(404).send({ message: `Not found any planets with ${climateQuery} climate `})
                 }
@@ -74,8 +73,7 @@ router.get('/planets/search', (req, res) => {
 
                     Promise.all(planetsWithDarkHaired).then(planets => {
                         return res.json({
-                            "Page data": pageData(limit, offset, planets.length, parseInt(page)),
-                            "Planets: ": paginate(parseInt(page), planets, limit)
+                            planets: planets
                         })
                     })
                     .catch(err => console.error(err)) 
