@@ -29,8 +29,19 @@ router.get('/planets', (req, res) => {
     let offset = req.query.offset || 0
     let page = req.query.page || 1
 
-    const data = fetchMetaData()
-                .then(values => res.json(values))
+    const data = fetchAllPlanets()
+                .then(values => {
+                    console.log(values)
+                    const getPageData = pageData(limit, offset, values.length, page)
+                    if(getPageData.page > getPageData.page_count){
+                        return res.status(404).send({ message: `This data has only ${getPageData.page_count} pages`})
+                    }else {
+                        return res.json({
+                            pageData: getPageData,
+                            planets: paginate(parseInt(page), values, parseInt(limit))
+                        })
+                    }
+                })
     return data
 }) 
 
