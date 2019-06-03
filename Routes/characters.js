@@ -5,6 +5,8 @@ const pageData = require('../lib/pagedata')
 const paginate = require('../lib/pagination')
 const baseUrl = 'https://swapi.co/api/films/'
 
+
+
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
 router.get('/movies/search', (req, res) => {
     let { title, gender, sortHeight, sortAge } = req.query
@@ -39,14 +41,19 @@ router.get('/movies/search', (req, res) => {
                     
                     return Promise.all(charactersPromises).then(responses => {
                         const people = responses.map(response => response.data)
-                     
+                        let pageCount = Math.ceil(people.length/limit) 
+                        
                         if(gender === undefined){
                             
-                            res.json({
-                                "Movie: ": movieFound.title,
-                                "Page data: ": pageData(limit, offset, people.length, parseInt(page)), 
-                                "Characters: ": paginate(parseInt(page), people, limit)
-                            })
+                            if(parseInt(page) > pageCount){
+                                res.status(404).send({ message: "No data found in this page!" })
+                            }else {
+                                res.json({
+                                    movie: movieFound.title,
+                                    pageData: pageData(limit, offset, people.length, page), 
+                                    characters: paginate(parseInt(page), people, limit)
+                                })
+                            }
                             
                         }
                         else if (gender === ""){
@@ -63,9 +70,9 @@ router.get('/movies/search', (req, res) => {
                                 //SORTING Height OR Age here
                                 if(sortHeight === undefined && sortAge === undefined){
                                     res.json({
-                                        "Movie: ": movieFound.title,
-                                        "Page data: ": pageData(limit, offset, listPeopleByGender.length, parseInt(page)), 
-                                        "Characters: ": paginate(parseInt(page), listPeopleByGender, limit)
+                                        movie: movieFound.title,
+                                        pageData: pageData(limit, offset, listPeopleByGender.length, page), 
+                                        characters: paginate(parseInt(page), listPeopleByGender, limit)
                                     })
 
                                 } 
@@ -86,9 +93,9 @@ router.get('/movies/search', (req, res) => {
                                             }
                                         })
                                         res.json({
-                                            "Movie: ": movieFound.title,
-                                            "Page data: ": pageData(limit, offset, charsSortHeight.length, parseInt(page)), 
-                                            "Characters: ": paginate(parseInt(page), charsSortHeight, limit)
+                                            movie: movieFound.title,
+                                            paginate: pageData(limit, offset, charsSortHeight.length, parseInt(page)), 
+                                            characters: paginate(parseInt(page), charsSortHeight, limit)
                                         })
                                     }
                                 }
@@ -110,9 +117,9 @@ router.get('/movies/search', (req, res) => {
                                         })
                                         
                                         res.json({
-                                            "Movie: ": movieFound.title,
-                                            "Page data: ": pageData(limit, offset, charsSortAge.length, parseInt(page)), 
-                                            "Characters: ": paginate(parseInt(page), charsSortAge, limit)
+                                            movie: movieFound.title,
+                                            pageData: pageData(limit, offset, charsSortAge.length, parseInt(page)), 
+                                            characters: paginate(parseInt(page), charsSortAge, limit)
                                         })
                                     }
                                 }

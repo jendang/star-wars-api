@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const bodyParser = require('body-parser')
 
 const moviesRouter = require('./Routes/movies')
@@ -10,6 +11,7 @@ const port = process.env.PORT || 4000
 
 app
     .use(bodyParser.json())
+    .use(cors())
     .use(moviesRouter)
     .use(charactersByMovieRouter)
     .use(planets)
