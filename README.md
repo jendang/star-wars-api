@@ -5,7 +5,9 @@
 
 ![Star Wars Logo](https://github.com/jendang/star-wars-api/blob/master/starwarslogo.png)
 
-## :point_right: :point_right:[Deployment link here ](https://desolate-shore-53301.herokuapp.com/) :point_left: :point_left:
+## :point_right: :point_right:[Deployment link for Backend here ](https://desolate-shore-53301.herokuapp.com/) :point_left: :point_left:
+
+## :point_right: :point_right:[Deployment link for Frontend here ](https://star-fan.netlify.com/) :point_left: :point_left:
 
 Tips: use FireFox to test the APIs, it will give you a nice format JSON data :+1::+1::+1:
 
@@ -26,7 +28,13 @@ Tips: use FireFox to test the APIs, it will give you a nice format JSON data :+1
 
 ## Framework
 
-* [Express](https://expressjs.com/)
+### Frontend
+ * ReactJS
+ * Semantic UI
+ * [Frontend REPO(https://github.com/jendang/star-wars-client)]
+
+### Backend
+ * [Express](https://expressjs.com/)
 
 ## Installation
 

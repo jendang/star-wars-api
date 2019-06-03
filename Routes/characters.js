@@ -6,7 +6,6 @@ const paginate = require('../lib/pagination')
 const baseUrl = 'https://swapi.co/api/films/'
 
 
-
 // Search movie by title => characters => filter "gender" => sort "height" OR "age"
 router.get('/movies/search', (req, res) => {
     let { title, gender, sortHeight, sortAge } = req.query
