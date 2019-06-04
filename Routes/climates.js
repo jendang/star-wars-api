@@ -5,23 +5,22 @@ const pageData = require('../lib/pagedata')
 const paginate = require('../lib/pagination')
 
 async function fetchAllPlanets() {
-    const baseUrl = 'https://swapi.co/api/planets/';
-    let allData = [];
-    const total_pages = 7;
-    let currentPage = 2;
+    const baseUrl = 'https://swapi.co/api/planets/'
+    let allData = []
+    const total_pages = 7
+    let currentPage
+    currentPage === undefined ? currentPage = 1 : currentPage = 2
 
-    const dataFirstPage = await axios.get(baseUrl)
-    let data = await dataFirstPage.data.results
-    data.forEach(e => allData.unshift(e))
-  
     while(currentPage <= total_pages) {
         const response = await axios.get(`${baseUrl}?page=${currentPage}`)
-        let  data = await response.data.results;
-        data.forEach(e => allData.unshift(e));
-        currentPage++;
+        let  data = await response.data.results // array of planets
+        data.forEach(e => allData.unshift(e))
+        currentPage ++
     }
     return allData;
 }
+
+
 
 //show all of Star Wars planets
 router.get('/planets', (req, res) => {
