@@ -3,24 +3,41 @@
 
 ### This is the backend for STAR WARS fanclub website make calls to the various API endpoints. 
 
+<p align="center">
+  <img width="460" height="300" src="https://github.com/jendang/star-wars-api/blob/master/starwarslogo.png">
+</p>
+
 ![Star Wars Logo](https://github.com/jendang/star-wars-api/blob/master/starwarslogo.png)
-
-## :point_right: :point_right:[Deployment link for Backend here ](https://desolate-shore-53301.herokuapp.com/) :point_left: :point_left:
-
-## :point_right: :point_right:[Deployment link for Frontend here ](https://star-fan.netlify.com/) :point_left: :point_left:
-
-Tips: use FireFox to test the APIs, it will give you a nice format JSON data :+1::+1::+1:
-
-![Example](https://github.com/jendang/star-wars-api/blob/master/firefox.png)
 
 ## Table of contents
 
+* Deployment
 * Requirements
 * Framework/technologies 
 * Installation 
 * Usage
 * Features
 * APIs/Packages references
+
+## Deployment
+
+### :point_right: :point_right:[Deployment link for Backend here ](https://desolate-shore-53301.herokuapp.com/) :point_left: :point_left:
+
+### :point_right: :point_right:[Deployment link for Frontend here ](https://star-fan.netlify.com/) :point_left: :point_left:
+
+### Examples to test methods with deployment link
+Tips: use FireFox to test the APIs, it will give you a nice format JSON data :+1::+1::+1:
+
+* Getting all movies [GET /movies](https://desolate-shore-53301.herokuapp.com/movies/)
+* Searching movie by title [GET /movies/search?title=hope](https://desolate-shore-53301.herokuapp.com/movies/search?title=hope)
+* Filtering by gender of characters [GET /movies/search?title=hope&gender=male](https://desolate-shore-53301.herokuapp.com/movies/search?title=hope&gender=male)
+* Sorting characters for a specific movie
+    * [GET /movies/search?title=hope&gender=male&sortHeight=asc](https://desolate-shore-53301.herokuapp.com/movies/search?title=hope&gender=male&sortHeight=asc)
+    * [GET /movies/search?title=hope&gender=male&sortAge=asc](https://desolate-shore-53301.herokuapp.com/movies/search?title=hope&gender=male&sortHeight=asc)
+* Pagination, the default limit is 30, however you can set the new limit by adding "limit" query at the end of endpoint API
+    * Return batches of 10 characters per page [GET /movies/search?title=hope&limit=10](https://desolate-shore-53301.herokuapp.com/movies/search?title=hope)
+    * Getting data in next pages [GET /movies/search?title=hope&limit=10&page=2](https://desolate-shore-53301.herokuapp.com/movies/search?title=hope)
+    
 
 ## Requirements
 
@@ -31,7 +48,7 @@ Tips: use FireFox to test the APIs, it will give you a nice format JSON data :+1
 ### Frontend
  * ReactJS
  * Semantic UI
- * [Frontend REPO(https://github.com/jendang/star-wars-client)]
+ * [Frontend REPO](https://github.com/jendang/star-wars-client)
 
 ### Backend
  * [Express](https://expressjs.com/)
@@ -63,7 +80,7 @@ nodemon .
 
 Current methods are:
 
-1. Searching all movies series of STAR WARS .get("/movies"), it will return an array of object movies. 
+1. Searching all movies series of STAR WARS GET /movies, it will return an array of object movies. 
 
 Here is an example data of a movie object. 
 
@@ -125,34 +142,12 @@ The characters property is an array of url's characters
 
 ```
 
-2. Searching a specific movie and return a list of characters from that movie. The pagination is done of the batches of 30 (default limit = 30) .get("/movies/search?title=")
+2. Searching a specific movie and return a list of characters from that movie GET /movies/search?title= .The pagination is done of the batches of 30 (default limit = 30)
 
-There are available some options for query parameters after we fetching all characters:
+Here is an example of data of method GET /movies/search?title=new+hope
 
-* gender: filter all characters by gender (female, male)
+``` javascript
 
-```
-http://localhost:4000/movies/search?title=hope&gender=male
-
-http://localhost:4000/movies/search?title=hope&gender=female
-
-```
-
-* sorting either height or age of characters by ascending/descending order
-
-```
-http://localhost:4000/movies/search?title=hope&gender=male&sortHeight=asc
-
-http://localhost:4000/movies/search?title=hope&gender=female&sortAge=desc
-
-
-```
-
-* Pagination: the limit is default of 30 characters per page. However it is dynamic, you can set limit higher or lower with the query paramater (&limit=). If the length of data is more than 30, you can use query parameter (&page=[next page]) to get the rest of data.
-
-Here is an example of data of method .get("/movies/search?title=new+hope")
-
-```
 Movie: 	"A New Hope"
 Page data: 	
     Total Count	18
@@ -183,7 +178,7 @@ Characters:
 
 Here is an example of a character object (detailed information of a character):
 
-```
+``` javascript
 {
     name	"Luke Skywalker"
     height	"172"
@@ -215,16 +210,53 @@ Here is an example of a character object (detailed information of a character):
 
 ```
 
-3. This endpoint .get("/planets/search?climate=") will return an object of all the planets that have this climate-type, and a collection of all dark-haired characters that live on this planet. The pagination works the same as the characters above.
+#### There are available some options for query parameters after we fetching all characters:
+
+* gender: filter all characters by gender (female, male)
+
+``` javascript
+
+GET /movies/search?title=hope&gender=male
+
+GET /movies/search?title=hope&gender=female
 
 ```
-http://localhost:4000/planets/search?climate=arid
+
+* sorting either height or age of characters by ascending/descending order
+
+``` javascript
+
+GET /movies/search?title=hope&gender=male&sortHeight=asc
+
+GET /movies/search?title=hope&gender=female&sortAge=desc
+
 
 ```
 
-Might return this json data, if the planet does not have any darkHaired characters, the darkHairedPeople property will return an empty array.
+* Pagination: the limit is default of 30 characters per page. However it is dynamic, you can set limit higher or lower with the query paramater (&limit=). 
+
+If the length of data is more than 30, you can use query parameter (&page=[next page]) to get the rest of data.
+
+``` javascript
+
+GET /movies/search?title=hope&gender=male&sortHeight=asc&limit=10
+
+GET /movies/search?title=hope&gender=female&sortAge=desc&limit=10&page=2
+
 
 ```
+
+3. This method GET /planets/search?climate= will return an object of all the planets that have this climate-type, and a collection of all __darkHaired characters__ that live on this planet. The pagination works the same as the characters above.
+
+```javascript
+
+GET /planets/search?climate=arid
+
+```
+
+Might return this JSON data, if the planet does not have any darkHaired characters, the darkHairedPeople property will return an empty array.
+
+``` javascript
 
 // Object of all planets
 
@@ -278,7 +310,6 @@ Might return this json data, if the planet does not have any darkHaired characte
 - Building more endpoints APIs such as searching specific character by name, homeworld ...
 - Front-end implementing
   
-
 
 ## APIs references
 
