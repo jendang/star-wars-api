@@ -17,7 +17,7 @@ router.get("/movies", (req, res) => {
                         let sortFilms = data.sort((a,b) => {
                             return Number(a.episode_id) - Number(b.episode_id)
                         })
-                        res.json({sortFilms})
+                        res.json(sortFilms)
                     })
                     .catch(err => console.error(err)) 
     return result
