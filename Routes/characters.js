@@ -12,14 +12,15 @@ async function fetchAllMovies() {
 
 //show all of Star Wars films details
 router.get("/movies", (req, res) => {
-    return fetchAllMovies()
-            .then(data => {
-                const sortFilms = data.sort((a,b) => {
-                    return Number(a.episode_id) - Number(b.episode_id)
-                })
-                return res.json(sortFilms)
-            })
-            .catch(err => console.error(err)) 
+    const result = fetchAllMovies()
+                    .then(data => {
+                        let sortFilms = data.sort((a,b) => {
+                            return Number(a.episode_id) - Number(b.episode_id)
+                        })
+                        res.json({sortFilms})
+                    })
+                    .catch(err => console.error(err)) 
+    return result
 }) 
 
 // Search characters by movie => characters => sort "height" OR "age"

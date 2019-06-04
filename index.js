@@ -6,7 +6,7 @@ const charactersByMovieRouter = require('./Routes/characters')
 const planets = require('./Routes/climates')
 
 const app = express()
-const port = process.env.PORT || 4000
+let port = process.env.PORT || 4000
 
 app
     .use(bodyParser.json())
@@ -14,3 +14,5 @@ app
     .use(charactersByMovieRouter)
     .use(planets)
     .listen(port, () => console.log(`Listening to port ${port}`))
+
+module.exports = app
