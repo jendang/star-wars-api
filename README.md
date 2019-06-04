@@ -14,6 +14,7 @@
 * Framework/technologies 
 * Installation 
 * Usage
+* Units Test
 * Features
 * APIs/Packages references
 
@@ -50,6 +51,7 @@ Tips: use FireFox to test the APIs, it will give you a nice format JSON data :+1
 
 ### Backend
  * [Express](https://expressjs.com/)
+ * [Supertest](https://www.npmjs.com/package/supertest)
 
 ## Installation
 
@@ -300,6 +302,13 @@ Might return this JSON data, if the planet does not have any darkHaired characte
         ...
 
 }
+
+```
+
+## Unit tests
+
+```javascript
+npm test
 
 ```
 
