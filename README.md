@@ -312,6 +312,22 @@ npm test
 
 ```
 
+If you see the error below while running the test. There are 2 ways two fix it:
+
+```javascript
+Uncaught Error: listen EADDRINUSE: address already in use :::[port-number]
+
+// Option 1: changing the [port-number]
+// Option 2: First, you would want to know which process is using port [port-number]
+
+sudo lsof -i :[port-number]
+
+// this will list all PID listening on this port, once you have the PID you can terminate it with the following:
+
+kill -9 PID]
+
+```
+
 ## Features
 
 - Building database with Postgres
