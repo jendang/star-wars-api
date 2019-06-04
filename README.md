@@ -324,7 +324,15 @@ sudo lsof -i :[port-number]
 
 // this will list all PID listening on this port, once you have the PID you can terminate it with the following:
 
-kill -9 PID]
+kill -9 [PID]
+
+// for example:
+sudo lsof -i :4000
+
+COMMAND   PID      USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    99177 jennydang   23u  IPv6 0xac3032e6232bbe21      0t0  TCP *:terabase (LISTEN)
+
+kill -9 99177
 
 ```
 
