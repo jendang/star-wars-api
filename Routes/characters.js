@@ -15,7 +15,8 @@ router.get("/movies", (req, res) => {
     return fetchAllMovies()
 }) 
 
-// Search movie by title => characters => filter "gender" => sort "height" OR "age"
+// Search characters by movie => characters => sort "height" OR "age"
+// characters => filter "gender" => sort "height" OR "age"
 router.get("/movies/search", (req, res) => {
     let { title, gender } = req.query
 
@@ -33,7 +34,6 @@ router.get("/movies/search", (req, res) => {
 
     const result =  fetchAllMovies()
         .then(movies => {
-            //console.log(movies) 
             const titleQuery = title.toLowerCase()
             const movie =  movies.find(movie => {
                 const movieTitle = movie.title.toLowerCase()
@@ -45,40 +45,91 @@ router.get("/movies/search", (req, res) => {
                 return res.status(404).send({ message: `Not found any movie with ${titleQuery} title `})
             } 
             const movieTitle = movie.title
-            let sortHeight = req.query.sortHeight
-            let sortAge = req.query.sortAge
-    
+            let { sortHeight, sortAge } = req.query
+
+            // Validate query params "sortHeight" & "sortAge"
+            if (sortHeight !== undefined && sortAge !== undefined){
+                return res.status(400).send({ message: "You can sort either height or age per time"})
+            }
+
+            if(sortHeight !== undefined){
+                if(sortHeight.toLowerCase() !== "asc" && sortHeight.toLowerCase() !== "desc") {    
+                    return res.status(400).send({ 
+                        message: `Height can be sorted "asc" - ascending or "desc" - descending!`
+                    })
+                } 
+            }
+
+            if(sortAge !== undefined){
+                if(sortAge.toLowerCase() !== "asc" && sortAge.toLowerCase() !== "desc") {    
+                    return res.status(400).send({ 
+                        message: `Age can be sorted "asc" - ascending or "desc" - descending!`
+                    })
+                }
+            }
             const charactersPromises =  movie.characters.map(url => axios.get(url))
             return Promise.all(charactersPromises)
                 .then(responses => responses.map(response => response.data))
                 .then(characters => {
                     const pageDataCharacters = pageData(limit, offset, characters.length, page)
-    
+                    if(parseInt(page) > pageDataCharacters.page_count){
+                        return res.status(404).send({ message: "Invalid page!" })
+                    }
+
                     // Validate query params "gender"
-                    if(gender === undefined){         
-                        if(parseInt(page) > pageDataCharacters.page_count){
-                            return res.status(404).send({ message: "Invalid page!" })
+                    if(gender === undefined){
+                        // SORTING all characters of a specific movie
+                        if(sortHeight === undefined && sortAge === undefined){
+                            return res.json({
+                                movie: movieTitle,
+                                pageData: pageDataCharacters, 
+                                characters: paginate(parseInt(page), characters, limit)
+                            })     
+                        } 
+
+                        if(sortHeight !== undefined && sortAge === undefined){
+                            const charsSortHeight = characters.sort((a,b) => {
+                                if(sortHeight.toLowerCase() === "asc"){
+                                    return parseInt(a.height) - parseInt(b.height)
+                                } else {
+                                    return parseInt(b.height) - parseInt(a.height)
+                                }
+                            })
+                            return res.json({
+                                movie: movieTitle,
+                                paginate: pageDataCharacters, 
+                                characters: paginate(parseInt(page), charsSortHeight, limit)
+                            })
                         }
-                        return res.json({
-                            movie: movieTitle,
-                            pageData: pageDataCharacters, 
-                            characters: paginate(parseInt(page), characters, limit)
-                        })     
+                        
+                        if(sortHeight === undefined && sortAge !== undefined){
+                            const charsSortAge = characters.sort((a,b) => {
+                                if(sortAge.toLowerCase() === "asc"){
+                                    return parseInt(a.birth_year) - parseInt(b.birth_year)
+                                } else {
+                                    return parseInt(b.birth_year) - parseInt(a.birth_year)
+                                }
+                            })
+                            return res.json({
+                                movie: movieTitle,
+                                pageData: pageDataCharacters, 
+                                characters: paginate(parseInt(page), charsSortAge, limit)
+                            })
+                        }
                     } 
                     
                     if(gender.toLowerCase() !== "male" && gender.toLowerCase() !== "female" ){
                         return res.status(400).send({ message: `Gender query's value is either "male" or "female"!`})
                     }
 
-                    // Validate query params "sortHeight" & "sortAge"
-                    
+                    // (gender !== undefined) ==> &gender=male/female
                     const charactersByGender = characters.filter(character => character.gender === gender.toLowerCase())
     
                     const pageDataByGender = pageData(limit, offset, charactersByGender.length, page)
                     if(parseInt(page) > pageDataByGender.page_count){
                         return res.status(404).send({ message: "Invalid page!" })
                     }
-                       
+                    // SORTING list of characters by gender
                     // Validate query params "sortHeight" & "sortAge"
                     if(sortHeight === undefined && sortAge === undefined){
                         return res.json({
@@ -87,17 +138,8 @@ router.get("/movies/search", (req, res) => {
                             characters: paginate(parseInt(page), charactersByGender, limit)
                         })
                     }
-    
-                    if (sortHeight !== undefined && sortAge !== undefined){
-                        return res.status(400).send({ message: "You can sort either height or age per time"})
-                    }
-    
+
                     if(sortHeight !== undefined && sortAge === undefined){
-                        if(sortHeight.toLowerCase() !== "asc" && sortHeight.toLowerCase() !== "desc") {    
-                            return res.status(400).send({ 
-                                message: `Height can be sorted "asc" - ascending or "desc" - descending!`
-                            })
-                        } 
                         const charsSortHeight = charactersByGender.sort((a,b) => {
                             if(sortHeight.toLowerCase() === "asc"){
                                 return parseInt(a.height) - parseInt(b.height)
@@ -105,7 +147,6 @@ router.get("/movies/search", (req, res) => {
                                 return parseInt(b.height) - parseInt(a.height)
                             }
                         })
-                        
                         return res.json({
                             movie: movieTitle,
                             paginate: pageDataByGender, 
@@ -114,9 +155,6 @@ router.get("/movies/search", (req, res) => {
                     }
     
                     if(sortHeight === undefined && sortAge !== undefined){
-                        if(sortAge.toLowerCase() !== "asc" && sortAge.toLowerCase() !== "desc") {    
-                            return res.status(400).send({ message: `Age can be sorted "asc" - ascending or "desc" - descending!`})
-                        }
                         const charsSortAge = charactersByGender.sort((a,b) => {
                             if(sortAge.toLowerCase() === "asc"){
                                 return parseInt(a.birth_year) - parseInt(b.birth_year)
@@ -124,7 +162,6 @@ router.get("/movies/search", (req, res) => {
                                 return parseInt(b.birth_year) - parseInt(a.birth_year)
                             }
                         })
-    
                         return res.json({
                             movie: movieTitle,
                             pageData: pageDataByGender, 
@@ -133,12 +170,7 @@ router.get("/movies/search", (req, res) => {
                     }
                 })
                 .catch(err => console.error(err))
-            // })
-
-
-
         })
-        // .then(movie => {
         .catch(err => console.error(err))        
 
     return result
