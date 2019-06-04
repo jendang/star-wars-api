@@ -1,138 +1,179 @@
-const { Router } = require('express')
-const axios = require('axios')
+const { Router } = require("express")
+const axios = require("axios")
 const router = new Router()
-const pageData = require('../lib/pagedata')
-const paginate = require('../lib/pagination')
-const baseUrl = 'https://swapi.co/api/films/'
+const pageData = require("../lib/pagedata")
+const paginate = require("../lib/pagination")
 
+async function fetchAllMovies() {
+    const baseUrl = "https://swapi.co/api/films/"
+    const response = await axios.get(`${baseUrl}`)
+    return response.data.results
+}
 
-// Search movie by title => characters => filter "gender" => sort "height" OR "age"
-router.get('/movies/search', (req, res) => {
-    let { title, gender, sortHeight, sortAge } = req.query
+//show all of Star Wars films details
+router.get("/movies", (req, res) => {
+    return fetchAllMovies()
+}) 
+
+// Search characters by movie => characters => sort "height" OR "age"
+// characters => filter "gender" => sort "height" OR "age"
+router.get("/movies/search", (req, res) => {
+    let { title, gender } = req.query
+
     let limit = req.query.limit || 30
     let offset = req.query.offset || 0
     let page = req.query.page || 1
-    axios
-        .get(baseUrl)
-        .then(response => response.data)
-        .then(data => data.results)
+
+    //Validate query params "title"
+    if(title === undefined){
+        return res.status(400).send({ message: "Bad request! Please input title query"})
+    } 
+    if(title === ""){
+        return res.status(400).send({ message: "Title search term should not be empty!"})
+    } 
+
+    const result =  fetchAllMovies()
         .then(movies => {
-            if(title === undefined){
-                res.status(400).send({ message: "Bad request!"})
+            const titleQuery = title.toLowerCase()
+            const movie =  movies.find(movie => {
+                const movieTitle = movie.title.toLowerCase()
+                if(movieTitle.includes(titleQuery)){
+                    return movie 
+                }
+            })
+            if(movie === undefined){
+                return res.status(404).send({ message: `Not found any movie with ${titleQuery} title `})
+            } 
+            const movieTitle = movie.title
+            let { sortHeight, sortAge } = req.query
+
+            // Validate query params "sortHeight" & "sortAge"
+            if (sortHeight !== undefined && sortAge !== undefined){
+                return res.status(400).send({ message: "You can sort either height or age per time"})
             }
-            else if (title === ""){
-                res.status(400).send({ message: "Title search term should not be empty!"})
+
+            if(sortHeight !== undefined){
+                if(sortHeight.toLowerCase() !== "asc" && sortHeight.toLowerCase() !== "desc") {    
+                    return res.status(400).send({ 
+                        message: `Height can be sorted "asc" - ascending or "desc" - descending!`
+                    })
+                } 
             }
-            else {
-                const titleQuery = title.toLowerCase()
-                const movieFound =  movies.find(movie => {
-                    const movieTitle = movie.title.toLowerCase()
-                    if(movieTitle.includes(titleQuery)){
-                        return movie 
+
+            if(sortAge !== undefined){
+                if(sortAge.toLowerCase() !== "asc" && sortAge.toLowerCase() !== "desc") {    
+                    return res.status(400).send({ 
+                        message: `Age can be sorted "asc" - ascending or "desc" - descending!`
+                    })
+                }
+            }
+            const charactersPromises =  movie.characters.map(url => axios.get(url))
+            return Promise.all(charactersPromises)
+                .then(responses => responses.map(response => response.data))
+                .then(characters => {
+                    const pageDataCharacters = pageData(limit, offset, characters.length, page)
+                    if(parseInt(page) > pageDataCharacters.page_count){
+                        return res.status(404).send({ message: "Invalid page!" })
+                    }
+
+                    // Validate query params "gender"
+                    if(gender === undefined){
+                        // SORTING all characters of a specific movie
+                        if(sortHeight === undefined && sortAge === undefined){
+                            return res.json({
+                                movie: movieTitle,
+                                pageData: pageDataCharacters, 
+                                characters: paginate(parseInt(page), characters, limit)
+                            })     
+                        } 
+
+                        if(sortHeight !== undefined && sortAge === undefined){
+                            const charsSortHeight = characters.sort((a,b) => {
+                                if(sortHeight.toLowerCase() === "asc"){
+                                    return parseInt(a.height) - parseInt(b.height)
+                                } else {
+                                    return parseInt(b.height) - parseInt(a.height)
+                                }
+                            })
+                            return res.json({
+                                movie: movieTitle,
+                                paginate: pageDataCharacters, 
+                                characters: paginate(parseInt(page), charsSortHeight, limit)
+                            })
+                        }
+                        
+                        if(sortHeight === undefined && sortAge !== undefined){
+                            const charsSortAge = characters.sort((a,b) => {
+                                if(sortAge.toLowerCase() === "asc"){
+                                    return parseInt(a.birth_year) - parseInt(b.birth_year)
+                                } else {
+                                    return parseInt(b.birth_year) - parseInt(a.birth_year)
+                                }
+                            })
+                            return res.json({
+                                movie: movieTitle,
+                                pageData: pageDataCharacters, 
+                                characters: paginate(parseInt(page), charsSortAge, limit)
+                            })
+                        }
+                    } 
+                    
+                    if(gender.toLowerCase() !== "male" && gender.toLowerCase() !== "female" ){
+                        return res.status(400).send({ message: `Gender query's value is either "male" or "female"!`})
+                    }
+
+                    // (gender !== undefined) ==> &gender=male/female
+                    const charactersByGender = characters.filter(character => character.gender === gender.toLowerCase())
+    
+                    const pageDataByGender = pageData(limit, offset, charactersByGender.length, page)
+                    if(parseInt(page) > pageDataByGender.page_count){
+                        return res.status(404).send({ message: "Invalid page!" })
+                    }
+                    // SORTING list of characters by gender
+                    // Validate query params "sortHeight" & "sortAge"
+                    if(sortHeight === undefined && sortAge === undefined){
+                        return res.json({
+                            movie: movieTitle,
+                            pageData: pageDataByGender, 
+                            characters: paginate(parseInt(page), charactersByGender, limit)
+                        })
+                    }
+
+                    if(sortHeight !== undefined && sortAge === undefined){
+                        const charsSortHeight = charactersByGender.sort((a,b) => {
+                            if(sortHeight.toLowerCase() === "asc"){
+                                return parseInt(a.height) - parseInt(b.height)
+                            } else {
+                                return parseInt(b.height) - parseInt(a.height)
+                            }
+                        })
+                        return res.json({
+                            movie: movieTitle,
+                            paginate: pageDataByGender, 
+                            characters: paginate(parseInt(page), charsSortHeight, limit)
+                        })
+                    }
+    
+                    if(sortHeight === undefined && sortAge !== undefined){
+                        const charsSortAge = charactersByGender.sort((a,b) => {
+                            if(sortAge.toLowerCase() === "asc"){
+                                return parseInt(a.birth_year) - parseInt(b.birth_year)
+                            } else {
+                                return parseInt(b.birth_year) - parseInt(a.birth_year)
+                            }
+                        })
+                        return res.json({
+                            movie: movieTitle,
+                            pageData: pageDataByGender, 
+                            characters: paginate(parseInt(page), charsSortAge, limit)
+                        })
                     }
                 })
-                if(movieFound === undefined){
-                    res.status(404).send({ message: `Not found any movie with ${titleQuery} title `})
-                }
-                else {
-                    const characters = movieFound.characters
-                    const charactersPromises =  characters.map(url => axios.get(url))
-                    
-                    return Promise.all(charactersPromises).then(responses => {
-                        const people = responses.map(response => response.data)
-                        let pageCount = Math.ceil(people.length/limit) 
-                        
-                        if(gender === undefined){
-                            
-                            if(parseInt(page) > pageCount){
-                                res.status(404).send({ message: "No data found in this page!" })
-                            }else {
-                                res.json({
-                                    movie: movieFound.title,
-                                    pageData: pageData(limit, offset, people.length, page), 
-                                    characters: paginate(parseInt(page), people, limit)
-                                })
-                            }
-                            
-                        }
-                        else if (gender === ""){
-                            res.status(400).send({ message: "Search term should not be empty!"})
-                        }
-                        else {
-                            const genderQuery = gender.toLowerCase()
-                            const listPeopleByGender =  people.filter(character => character.gender === genderQuery)
-                            
-                            if(listPeopleByGender.length === 0){
-                                res.status(404).send({ message: `Not found characters with that search term!`})
-                            } else {
-                                //List of people by filter gender (female/male)
-                                //SORTING Height OR Age here
-                                if(sortHeight === undefined && sortAge === undefined){
-                                    res.json({
-                                        movie: movieFound.title,
-                                        pageData: pageData(limit, offset, listPeopleByGender.length, page), 
-                                        characters: paginate(parseInt(page), listPeopleByGender, limit)
-                                    })
-
-                                } 
-                                else if (sortHeight !== undefined && sortAge === undefined){
-                                    let sortHeightQuery = sortHeight.toLowerCase()
-                                    if(sortHeightQuery === ""){
-                                        res.status(400).send({ message: "Search term should not be empty!"})
-                                    } 
-                                    else if(sortHeightQuery !== 'asc' && sortHeightQuery !== 'desc') {    
-                                        res.status(400).send({ message: "Bad request!"})
-                                    } 
-                                    else {
-                                        const charsSortHeight = listPeopleByGender.sort((a,b) => {
-                                            if(sortHeightQuery === 'asc'){
-                                                return Number(a.height) - Number(b.height)
-                                            } else {
-                                                return Number(b.height) - Number(a.height)
-                                            }
-                                        })
-                                        res.json({
-                                            movie: movieFound.title,
-                                            paginate: pageData(limit, offset, charsSortHeight.length, parseInt(page)), 
-                                            characters: paginate(parseInt(page), charsSortHeight, limit)
-                                        })
-                                    }
-                                }
-                                else if(sortHeight === undefined && sortAge !== undefined){
-                                    let sortAgeQuery = sortAge.toLowerCase()
-                                    if(sortAgeQuery === ""){
-                                        res.status(400).send({ message: "Search term should not be empty!"})
-                                    } 
-                                    else if(sortAgeQuery !== 'asc' && sortAgeQuery !== 'desc') {    
-                                        res.status(400).send({ message: "Bad request!"})
-                                    } 
-                                    else {
-                                        const charsSortAge = listPeopleByGender.sort((a,b) => {
-                                            if(sortAgeQuery === 'asc'){
-                                                return parseInt(a.birth_year) - parseInt(b.birth_year)
-                                            } else {
-                                                return parseInt(b.birth_year) - parseInt(a.birth_year)
-                                            }
-                                        })
-                                        
-                                        res.json({
-                                            movie: movieFound.title,
-                                            pageData: pageData(limit, offset, charsSortAge.length, parseInt(page)), 
-                                            characters: paginate(parseInt(page), charsSortAge, limit)
-                                        })
-                                    }
-                                }
-                                else if (sortHeight !== undefined && sortAge !== undefined){
-                                    res.status(400).send({ message: "You can sort either height or age per time"})
-                                }
-                            }
-                        }
-                    })
-                    .catch(err => console.error(err))
-                }
-            }
-        }) 
+                .catch(err => console.error(err))
+        })
         .catch(err => console.error(err))        
+
+    return result
 })
 
 module.exports = router

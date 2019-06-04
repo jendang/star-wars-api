@@ -7,8 +7,6 @@
   <img width="460" height="300" src="https://github.com/jendang/star-wars-api/blob/master/starwarslogo.png">
 </p>
 
-![Star Wars Logo](https://github.com/jendang/star-wars-api/blob/master/starwarslogo.png)
-
 ## Table of contents
 
 * Deployment
@@ -57,7 +55,8 @@ Tips: use FireFox to test the APIs, it will give you a nice format JSON data :+1
 
 * First, clone the project https://github.com/jendang/star-wars-api.git
 
-```
+``` javascript
+
 cd projectFolder  
 
 npm install
@@ -66,7 +65,7 @@ npm install
 
 * To start the server, for more information/download nodemon [here](https://nodemon.io/)
 
-```
+``` javascript
 
 node .
 
@@ -84,7 +83,7 @@ Current methods are:
 
 Here is an example data of a movie object. 
 
-```
+```javascript
 {
     title	"A New Hope"
     episode_id	4
@@ -106,7 +105,7 @@ Here is an example data of a movie object.
 
 The characters property is an array of url's characters
 
-```
+```javascript
 {
     title	"A New Hope"
     ....
