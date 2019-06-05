@@ -15,6 +15,7 @@
 * Installation 
 * Usage
 * Units Test
+* Agile workflow
 * Features
 * APIs/Packages references
 
@@ -336,6 +337,15 @@ kill -9 99177
 
 ```
 
+## My agile workflow 
+
+I created a project to manage my workflow inside the git repository. I divided my tasks into three sessions:
+* todos: list all steps/activities that you need to do for the project
+* in progress: I move the todos here when I am working on that
+* done: I move the tasks here when I finished it
+
+[Checkout my project's planning here](https://github.com/jendang/star-wars-api/projects/1)
+
 ## Features
 
 - Building database with Postgres
@@ -345,5 +355,6 @@ kill -9 99177
 
 ## APIs references
 
-All data was fetching from [SWAPI](https://swapi.co/).
+All data was fetching from [SWAPI](https://swapi.co/)
 
+For more information about this project, please feel free to [contact me](https://www.linkedin.com/in/jennydang/)
